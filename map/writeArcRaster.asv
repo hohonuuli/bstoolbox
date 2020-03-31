@@ -1,0 +1,65 @@
+function writeArcRaster(filename, x, y, z, f)
+% writeArcRaster - create an arcview ASCII raster file from gridded data
+%
+% use as: writeArcRaster(filename, x, y, z, f)
+%         writeArcRaster(filename, x, y, z)
+% Inputs: filename = name of the file to create
+%         x = lon grid
+%         y =  lat grid
+%         z = value grid
+%         f = formatting (example '%i' or '%f'); default = '%f'
+%         x, y, and v are a single layer of grids created using grid3d,
+%         i.e. x = xi(:,:,n), or output from griddata
+
+% Brian Schlining
+% 10 Aug 2000
+
+dx = diff(x(1,:));
+dy = diff(y(:,1));
+dx = dx(1);
+dy = dy(1);
+
+%if dy ~= dx
+%   fprintf(1, '\nwriteArcRaster WARNING: Coordinate grid is not square\n')
+%end
+
+cellsize = dx;
+nodata_value = -999;
+
+bad = find(isnan(z));
+z(bad) = nodata_value;
+
+[ry cx] = size(x);
+[ry cy] = size(y);
+[nrows ncols] = size(z);
+
+xllcorner = min(min(x));
+yllcorner = min(min(y));
+
+fid = fopen(filename, 'wt');
+if fid < 0
+   error(['Unable to open ' filename]);
+end
+
+fprintf(fid, 'ncols %i\n', ncols);
+fprintf(fid, 'nrows %i\n', nrows);
+fprintf(fid, 'xllcorner %9.7f\n', xllcorner);
+fprintf(fid, 'yllcorner %9.7f\n', yllcorner);
+fprintf(fid, 'cellsize %s\n', num2str(cellsize));
+fprintf(fid, 'nodata_value %s\n', num2str(nodata_value));
+
+if nargin < 5
+    f = '%f';
+end
+formatString = f;
+for i = 2:cx
+   formatString = [formatString ' ' f];
+end
+formatString = [formatString '\n'];
+
+
+fprintf(fid,formatString,(z)');
+
+fclose(fid);
+
+

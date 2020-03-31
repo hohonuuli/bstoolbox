@@ -1,0 +1,3 @@
+function s = gmtstr
+
+c = java.util.GregorianCalendar(java.util.TimeZone.getTimeZone("GMT")
